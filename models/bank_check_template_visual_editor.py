@@ -58,37 +58,55 @@ class BankCheckTemplateVisualEditor(models.Model):
     
     def action_preview_check(self):
         """
-        Génère un aperçu du chèque avec les positions actuelles
+        Génère un aperçu PDF du chèque avec les positions actuelles
         """
         self.ensure_one()
         
-        # Créer un chèque temporaire pour l'aperçu
-        preview_data = {
+        # Créer un chèque temporaire pour l'aperçu avec des données réalistes
+        preview_check = self.env['check.printing'].create({
+            'check_number': f'PREVIEW-{self.id}',
             'date': fields.Date.today(),
-            'beneficiary': 'ENTREPRISE EXEMPLE SARL',
+            'beneficiary': 'SOCIÉTÉ EXEMPLE SARL',
             'amount': 1500000.00,
-            'amount_words': 'Un million cinq cent mille francs CFA',
-            'location': 'Abidjan',
-        }
+            'memo': f'Aperçu du modèle {self.template_name}',
+            'bank_template_id': self.id,
+            'number_generation_method': 'manual',
+            'state': 'draft',
+        })
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Aperçu du chèque'),
-                'message': _(
-                    'Position Date: (%s, %s) mm\n'
-                    'Position Bénéficiaire: (%s, %s) mm\n'
-                    'Position Montant: (%s, %s) mm'
-                ) % (
-                    self.date_x, self.date_y,
-                    self.beneficiary_x, self.beneficiary_y,
-                    self.amount_digits_x, self.amount_digits_y
-                ),
-                'type': 'info',
-                'sticky': True,
+        try:
+            # Générer le PDF du chèque d'aperçu
+            pdf_data = preview_check._generate_check_pdf()
+            preview_check.write({
+                'pdf_file': pdf_data,
+                'pdf_filename': f'Apercu_{self.template_name}.pdf',
+                'state': 'ready'
+            })
+            
+            # Retourner l'action pour télécharger/visualiser le PDF
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Aperçu du chèque - %s') % self.template_name,
+                'res_model': 'check.printing',
+                'res_id': preview_check.id,
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {
+                    'is_preview': True,
+                    'form_view_initial_mode': 'readonly',
+                },
+                'flags': {
+                    'mode': 'readonly',
+                }
             }
-        }
+            
+        except Exception as e:
+            # En cas d'erreur, supprimer le chèque temporaire et afficher l'erreur
+            preview_check.unlink()
+            raise UserError(_(
+                'Erreur lors de la génération de l\'aperçu:\n\n%s\n\n'
+                'Vérifiez que toutes les positions sont correctement configurées.'
+            ) % str(e))
     
     def action_copy_positions_from(self):
         """
@@ -315,13 +333,12 @@ class BankCheckTemplateVisualEditor(models.Model):
                 }
             }
 
-
 class BankCheckTemplateCopyWizard(models.TransientModel):
     """Assistant pour copier les positions d'un template à un autre"""
     
     _name = 'bank.check.template.copy.wizard'
     _description = 'Assistant de copie de positions'
-    
+
     source_template_id = fields.Many2one(
         'bank.check.template',
         string='Template source',

@@ -24,7 +24,7 @@
                 </xpath>
 
                 <!-- Ajouter un onglet Éditeur Visuel dans le notebook -->
-                <xpath expr="//notebook" position="inside">
+                <xpath expr="//notebook/page[1]" position="after">
                     <page string="🎨 Éditeur Visuel" name="visual_editor">
                         <div class="alert alert-info mb-3" role="alert">
                             <h5><i class="fa fa-info-circle" /> Éditeur Visuel de Positionnement</h5>
