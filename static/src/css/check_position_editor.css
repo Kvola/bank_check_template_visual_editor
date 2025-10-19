@@ -1,0 +1,400 @@
+/* ================================================
+   Éditeur Visuel de Positionnement - Styles
+   ================================================ */
+
+.check_position_editor {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 600px;
+}
+
+/* Barre d'outils */
+.editor_toolbar {
+    display: flex;
+    gap: 15px;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+}
+
+.toolbar_section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.zoom_indicator {
+    padding: 6px 12px;
+    background: #e9ecef;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Container de l'éditeur */
+.editor_container {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 500px;
+}
+
+/* Canvas du chèque */
+.check_canvas {
+    position: relative;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: crosshair;
+    flex-shrink: 0;
+}
+
+/* Grille de fond */
+.check_grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+        linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Image de fond du chèque */
+.check_background_image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+/* Indicateur d'opacité */
+.opacity_indicator {
+    padding: 6px 12px;
+    background: #e9ecef;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #495057;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Éléments positionnables */
+.check_element {
+    position: absolute;
+    border: 2px dashed;
+    border-radius: 4px;
+    cursor: move;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.8;
+    z-index: 10; /* Au-dessus de l'image de fond */
+}
+
+.check_element:hover {
+    opacity: 1;
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.check_element.selected {
+    border-style: solid;
+    border-width: 3px;
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.3);
+    z-index: 20;
+}
+
+.check_element.dragging {
+    opacity: 0.9;
+    cursor: grabbing;
+    transform: scale(1.05);
+    z-index: 30;
+}
+
+.element_label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    padding: 2px 8px;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.element_coords {
+    font-size: 10px;
+    font-weight: 600;
+    color: #495057;
+    background: rgba(255,255,255,0.9);
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.resize_handle {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    background: #007bff;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: nwse-resize;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Panneau latéral */
+.side_panel {
+    flex: 0 0 300px;
+    background: white;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    max-height: 650px;
+}
+
+.side_panel h4 {
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #dee2e6;
+    color: #343a40;
+}
+
+.side_panel h5 {
+    margin: 15px 0 10px 0;
+    color: #495057;
+    font-size: 14px;
+}
+
+/* Liste des éléments */
+.elements_list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.element_control {
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.element_control:hover {
+    border-color: #ced4da;
+    background: white;
+}
+
+.element_control.active {
+    border-color: #007bff;
+    background: #e7f1ff;
+    box-shadow: 0 2px 6px rgba(0,123,255,0.2);
+}
+
+.element_header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.element_color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.element_info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.coord_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord_row label {
+    margin: 0;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.coord_row span {
+    color: #343a40;
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+}
+
+/* Section d'aide */
+.help_section {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e7f3ff;
+    border-left: 4px solid #007bff;
+    border-radius: 4px;
+}
+
+.help_section ul {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.help_section ul li {
+    margin-bottom: 6px;
+}
+
+/* Informations sur le chèque */
+.check_info {
+    display: flex;
+    gap: 20px;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+}
+
+.info_item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+    color: #495057;
+}
+
+.info_item strong {
+    color: #343a40;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .editor_container {
+        flex-direction: column;
+    }
+    
+    .side_panel {
+        flex: 0 0 auto;
+        max-height: none;
+    }
+    
+    .check_canvas {
+        align-self: center;
+    }
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.check_element.selected .element_label {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* États des boutons */
+.btn-sm {
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.btn .fa {
+    margin-right: 4px;
+}
+
+/* Scrollbar personnalisée pour le panneau */
+.side_panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.side_panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.side_panel::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 4px;
+}
+
+.side_panel::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}
+
+/* Style pour le chèque imprimé (aperçu) */
+.check_preview {
+    background-image: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 4px,
+            rgba(0,0,0,0.03) 4px,
+            rgba(0,0,0,0.03) 5px
+        );
+}
+
+/* Messages d'état */
+.editor_status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

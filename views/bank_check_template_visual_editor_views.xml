@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue avec éditeur visuel -->
+        <record id="view_bank_check_template_visual_editor" model="ir.ui.view">
+            <field name="name">bank.check.template.form.visual.editor</field>
+            <field name="model">bank.check.template</field>
+            <field name="inherit_id"
+                ref="check_printing_generic.view_bank_check_template_form_enhanced" />
+            <field name="arch" type="xml">
+
+                <!-- Ajouter des boutons dans le header -->
+                <xpath expr="//header/button[last()]" position="after">
+                    <button name="action_open_visual_editor" string="Éditeur Visuel"
+                        type="object" class="btn-success"
+                        icon="fa-paint-brush"
+                        help="Ouvrir l'éditeur visuel de positionnement" />
+                    <button name="action_preview_check" string="Aperçu"
+                        type="object" class="btn-info"
+                        help="Prévisualiser le chèque avec les positions actuelles" />
+                    <button name="action_validate_positions" string="Valider"
+                        type="object" class="btn-warning"
+                        help="Vérifier que les positions sont correctes" />
+                </xpath>
+
+                <!-- Ajouter un onglet Éditeur Visuel dans le notebook -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="🎨 Éditeur Visuel" name="visual_editor">
+                        <div class="alert alert-info mb-3" role="alert">
+                            <h5><i class="fa fa-info-circle" /> Éditeur Visuel de Positionnement</h5>
+                            <p>
+                                Positionnez visuellement les éléments du chèque en les glissant sur
+                                le canvas.
+                                Les modifications sont sauvegardées automatiquement.
+                            </p>
+                            <p class="mb-0">
+                                <strong>💡 Astuce :</strong> Uploadez une image d'un chèque vierge
+                                de votre banque pour positionner les éléments avec une précision
+                                maximale ! </p>
+                        </div>
+
+                        <!-- Widget personnalisé pour l'éditeur visuel -->
+                        <field name="visual_editor_data" widget="check_position_editor" nolabel="1" />
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <separator string="Actions rapides" />
+                                <button name="action_reset_all_positions"
+                                    string="Réinitialiser toutes les positions"
+                                    type="object"
+                                    class="btn-warning"
+                                    icon="fa-undo"
+                                    confirm="Êtes-vous sûr de vouloir réinitialiser toutes les positions ?" />
+                                <button name="action_copy_positions_from"
+                                    string="Copier depuis un autre template"
+                                    type="object"
+                                    class="btn-secondary"
+                                    icon="fa-copy" />
+
+                                <separator string="Import/Export" />
+                                <button name="action_export_positions"
+                                    string="Exporter les positions (JSON)"
+                                    type="object"
+                                    class="btn-primary"
+                                    icon="fa-download" />
+                                <field name="enable_visual_editor" widget="boolean_toggle" />
+                            </div>
+                        </div>
+                    </page>
+                </xpath>
+
+                <!-- Ajouter des indicateurs visuels dans l'onglet Positionnement existant -->
+                <xpath expr="//page[@name='positioning']" position="inside">
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-success" role="alert">
+                                <h5><i class="fa fa-lightbulb-o" /> Astuce</h5>
+                                <p> Utilisez l'onglet <strong>"🎨 Éditeur Visuel"</strong> pour
+                                    positionner les éléments de manière interactive plutôt que de
+                                    saisir manuellement les coordonnées. </p>
+                                <button name="action_open_visual_editor"
+                                    string="Ouvrir l'éditeur visuel"
+                                    type="object"
+                                    class="btn btn-success btn-sm" />
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Vue wizard pour copier les positions -->
+        <record id="view_bank_check_template_copy_wizard_form" model="ir.ui.view">
+            <field name="name">bank.check.template.copy.wizard.form</field>
+            <field name="model">bank.check.template.copy.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>Copier les positions</h1>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="source_template_id"
+                                    options="{'no_create': True}"
+                                    placeholder="Sélectionnez le template source"
+                                    help="Template depuis lequel copier" />
+                            </group>
+                            <group>
+                                <field name="target_template_id"
+                                    options="{'no_create': True}"
+                                    placeholder="Sélectionnez le template cible"
+                                    help="Template vers lequel copier" />
+                            </group>
+                        </group>
+
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <strong>Attention:</strong> Cette action remplacera toutes les positions
+                            du template cible par celles du template source. </div>
+                    </sheet>
+
+                    <footer>
+                        <button string="Copier les positions"
+                            name="action_copy_positions"
+                            type="object"
+                            class="btn-primary" />
+                        <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue Kanban améliorée avec indicateur d'éditeur visuel -->
+        <record id="view_bank_check_template_kanban_visual" model="ir.ui.view">
+            <field name="name">bank.check.template.kanban.visual</field>
+            <field name="model">bank.check.template</field>
+            <field name="inherit_id" ref="check_printing_generic.view_bank_check_template_kanban" />
+            <field name="arch" type="xml">
+                <xpath expr="//div[@class='o_kanban_card_footer']" position="after">
+                    <div class="oe_kanban_footer mt-2">
+                        <div class="o_kanban_record_bottom">
+                            <div class="oe_kanban_bottom_left">
+                                <button name="action_open_visual_editor"
+                                    type="object"
+                                    class="btn btn-sm btn-success">
+                                    <i class="fa fa-paint-brush" /> Éditeur </button>
+                            </div>
+                            <div class="oe_kanban_bottom_right">
+                                <field name="enable_visual_editor" widget="boolean_toggle" />
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Action dédiée pour l'éditeur visuel -->
+        <record id="action_bank_check_template_visual_editor_only" model="ir.actions.act_window">
+            <field name="name">Éditeur Visuel de Chèques</field>
+            <field name="res_model">bank.check.template</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_bank_check_template_visual_editor" />
+            <field name="target">current</field>
+        </record>
+
+    </data>
+</odoo>

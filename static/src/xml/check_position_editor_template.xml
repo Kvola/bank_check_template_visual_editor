@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bank_check_template.CheckPositionEditor">
+        <div class="check_position_editor">
+            <!-- Barre d'outils -->
+            <div class="editor_toolbar">
+                <div class="toolbar_section">
+                    <button class="btn btn-sm btn-primary" t-on-click="() => this.changeZoom(0.1)">
+                        <i class="fa fa-search-plus"/> Zoom +
+                    </button>
+                    <button class="btn btn-sm btn-primary" t-on-click="() => this.changeZoom(-0.1)">
+                        <i class="fa fa-search-minus"/> Zoom -
+                    </button>
+                    <span class="zoom_indicator">
+                        Zoom: <t t-esc="Math.round(state.zoom * 100)"/>%
+                    </span>
+                </div>
+
+                <div class="toolbar_section">
+                    <button class="btn btn-sm" 
+                            t-att-class="state.showGrid ? 'btn-success' : 'btn-secondary'"
+                            t-on-click="() => this.toggleGrid()">
+                        <i class="fa fa-th"/> Grille
+                    </button>
+                    <button class="btn btn-sm" 
+                            t-att-class="state.snapToGrid ? 'btn-success' : 'btn-secondary'"
+                            t-on-click="() => this.toggleSnap()">
+                        <i class="fa fa-magnet"/> Magnétisme
+                    </button>
+                </div>
+                
+                <div class="toolbar_section" t-if="checkImageUrl">
+                    <button class="btn btn-sm btn-secondary" t-on-click="() => this.changeImageOpacity(-0.1)">
+                        <i class="fa fa-minus"/> Opacité
+                    </button>
+                    <span class="opacity_indicator">
+                        <t t-esc="Math.round((props.record.data.check_image_opacity || 0.5) * 100)"/>%
+                    </span>
+                    <button class="btn btn-sm btn-secondary" t-on-click="() => this.changeImageOpacity(0.1)">
+                        <i class="fa fa-plus"/> Opacité
+                    </button>
+                </div>
+                
+                <div class="toolbar_section">
+                    <label class="btn btn-sm btn-success mb-0" style="cursor: pointer;">
+                        <i class="fa fa-upload"/> 
+                        <span t-if="!checkImageUrl">Upload image</span>
+                        <span t-else="">Changer image</span>
+                        <input type="file" 
+                               accept="image/*" 
+                               style="display: none;"
+                               t-on-change="(e) => this.uploadCheckImage(e)"/>
+                    </label>
+                    <button t-if="checkImageUrl" 
+                            class="btn btn-sm btn-danger" 
+                            t-on-click="() => this.removeCheckImage()">
+                        <i class="fa fa-trash"/> Supprimer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Zone de l'éditeur -->
+            <div class="editor_container">
+                <!-- Canvas du chèque -->
+                <div class="check_canvas" 
+                     t-ref="checkCanvas"
+                     t-att-style="`
+                         width: ${(props.record.data.check_width || 175) * this.getScale()}px;
+                         height: ${(props.record.data.check_height || 85) * this.getScale()}px;
+                     `">
+                    
+                    <!-- Grille de fond -->
+                    <div t-if="state.showGrid" class="check_grid"
+                         t-att-style="`
+                             background-size: ${state.gridSize * this.getScale()}px ${state.gridSize * this.getScale()}px;
+                         `"/>
+                    
+                    <!-- Image du chèque en fond -->
+                    <div t-if="checkImageUrl" 
+                         class="check_background_image"
+                         t-att-style="`
+                             background-image: url('${checkImageUrl}');
+                             opacity: ${props.record.data.check_image_opacity || 0.5};
+                         `"/>
+
+                    <!-- Éléments positionnables -->
+                    <t t-foreach="state.elements" t-as="element" t-key="element.id">
+                        <div class="check_element"
+                             t-att-class="{
+                                 'selected': state.selectedElement?.id === element.id,
+                                 'dragging': state.isDragging and state.selectedElement?.id === element.id
+                             }"
+                             t-att-style="`
+                                 left: ${element.x * this.getScale()}px;
+                                 top: ${element.y * this.getScale()}px;
+                                 width: ${element.width * this.getScale()}px;
+                                 height: ${element.height * this.getScale()}px;
+                                 background-color: ${element.color}30;
+                                 border-color: ${element.color};
+                             `">
+                            
+                            <div class="element_label" t-att-style="`background-color: ${element.color};`">
+                                <t t-esc="element.label"/>
+                            </div>
+                            
+                            <div class="element_coords">
+                                (<t t-esc="Math.round(element.x)"/>, <t t-esc="Math.round(element.y)"/>) mm
+                            </div>
+
+                            <!-- Poignée de redimensionnement (uniquement pour certains éléments) -->
+                            <div t-if="element.fields.includes('beneficiary_width') or element.fields.includes('amount_words_width')"
+                                 class="resize_handle"/>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Panneau latéral avec les contrôles -->
+                <div class="side_panel">
+                    <h4>Éléments du chèque</h4>
+                    
+                    <div class="elements_list">
+                        <t t-foreach="state.elements" t-as="element" t-key="element.id">
+                            <div class="element_control"
+                                 t-att-class="{'active': state.selectedElement?.id === element.id}">
+                                
+                                <div class="element_header">
+                                    <span class="element_color" t-att-style="`background-color: ${element.color};`"/>
+                                    <strong t-esc="element.label"/>
+                                </div>
+
+                                <div class="element_info">
+                                    <div class="coord_row">
+                                        <label>Position X:</label>
+                                        <span t-esc="Math.round(element.x * 10) / 10"/> mm
+                                    </div>
+                                    <div class="coord_row">
+                                        <label>Position Y:</label>
+                                        <span t-esc="Math.round(element.y * 10) / 10"/> mm
+                                    </div>
+                                    <div t-if="element.fields.includes('beneficiary_width') or element.fields.includes('amount_words_width')"
+                                         class="coord_row">
+                                        <label>Largeur:</label>
+                                        <span t-esc="Math.round(element.width * 10) / 10"/> mm
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-sm btn-secondary btn-block"
+                                        t-on-click="() => this.resetPosition(element)">
+                                    <i class="fa fa-undo"/> Réinitialiser
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+
+                    <div class="help_section">
+                        <h5><i class="fa fa-info-circle"/> Aide</h5>
+                        <ul>
+                            <li>Cliquez et glissez les éléments pour les positionner</li>
+                            <li>Les coordonnées sont en millimètres</li>
+                            <li>Utilisez la grille pour un alignement précis</li>
+                            <li>Les modifications sont sauvegardées automatiquement</li>
+                        </ul>
+                        <div t-if="checkImageUrl" class="alert alert-success mt-2">
+                            <strong><i class="fa fa-image"/> Image chargée</strong><br/>
+                            Utilisez les boutons +/- Opacité pour ajuster la visibilité
+                        </div>
+                        <div t-else="" class="alert alert-warning mt-2">
+                            <strong><i class="fa fa-lightbulb-o"/> Astuce</strong><br/>
+                            Uploadez une image de chèque pour un positionnement plus précis !
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations sur le chèque -->
+            <div class="check_info">
+                <div class="info_item">
+                    <strong>Dimensions:</strong>
+                    <t t-esc="props.record.data.check_width || 175"/> mm × 
+                    <t t-esc="props.record.data.check_height || 85"/> mm
+                </div>
+                <div class="info_item">
+                    <strong>Banque:</strong>
+                    <t t-esc="props.record.data.bank_name || 'Non définie'"/>
+                </div>
+                <div class="info_item">
+                    <strong>Police:</strong>
+                    <t t-esc="props.record.data.font_name || 'Helvetica'"/> 
+                    (<t t-esc="props.record.data.font_size || 10"/>pt)
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
